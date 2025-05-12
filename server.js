@@ -5,7 +5,7 @@ import cors from 'cors'
 
 const app = express();
 app.use(cors({
-    origin: ['http://localhost:5173', 'https://k0ng999.github.io/Love/'], // Разрешённые источники
+    origin: ['http://localhost:5173', 'https://k0ng999.github.io'], // Разрешённые источники
     methods: ['GET', 'POST'], // Разрешённые методы
     allowedHeaders: ['Content-Type'], // Разрешённые заголовки
 }));
