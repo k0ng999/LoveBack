@@ -109,7 +109,17 @@ app.post('/sendNotification', async (req, res) => {
         }
 
         // 8) Готовим и шлем payload
-        const payload = JSON.stringify({ title: 'Привет!', body: 'Это пуш по кнопке!' });
+        let payload;
+        const p256dh = sender.keys?.p256dh;
+
+        if (p256dh === 'BDo-Qix-qhyRYYuHYLECkldeJl9yJ9WNjghF8HaGCvpgltIPk3o4UDDRPmAcpfni2ZTLGi7-5ZkBsCA_D8K-E4s') {
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
+        } else if (p256dh === 'BIqSR4K4jKUp6bFd2ldmaiD_OziiWjhf8YGecHTUQZeARWJTea9KbAOOyOz-WE3Y_ao49TMP0FQVEvt81ZDrHK0') {
+            payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
+        } else {
+            payload = JSON.stringify({ title: 'Привет!', body: 'Это пуш по кнопке!' });
+        }
+
         const results = await Promise.allSettled(
             recipients.map(sub => webpush.sendNotification(sub, payload))
         );
@@ -140,6 +150,7 @@ app.post('/sendNotification', async (req, res) => {
         return res.status(500).json({ error: 'Ошибка отправки уведомлений' });
     }
 });
+
 
 
 
