@@ -132,7 +132,6 @@ app.post('/sendNotification', async (req, res) => {
         if (allSubs.some(s => s.endpoint.trim() === senderEndpoint)) {
             finalList.push(sender);
         }
-        await saveSubscriptions(finalList);
 
         console.log('[SERVER] Push завершён. Успех:', validRecipients.length, 'Неудач:', recipients.length - validRecipients.length);
         return res.status(200).json({ success: true });
