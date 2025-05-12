@@ -4,7 +4,12 @@ import bodyParser from 'body-parser'
 import cors from 'cors'
 
 const app = express();
-app.use(cors());
+app.use(cors({
+    origin: ['http://localhost:5173', 'https://k0ng999.github.io/Love/'], // Разрешённые источники
+    methods: ['GET', 'POST'], // Разрешённые методы
+    allowedHeaders: ['Content-Type'], // Разрешённые заголовки
+}));
+
 app.use(bodyParser.json());
 
 const port = process.env.PORT || 4000
