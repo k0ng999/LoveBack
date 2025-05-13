@@ -53,9 +53,8 @@ app.post('/subscribe', async (req, res) => {
         const exists = subs.some(s => s.endpoint === subscription.endpoint);
         if (!exists) {
             console.log('[SERVER] Добавляем подписку:------------------------------------------------------------->', subscription);
-            console.log('[SERVER] Подписка добавлена:', subscription.endpoint);
         } else {
-            console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
+            // console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
         }
 
         res.status(201).json({ success: true });
@@ -69,42 +68,42 @@ app.post('/sendNotification', async (req, res) => {
     try {
         // 1) Забираем senderSubscription из тела
         let sender = req.body?.senderSubscription;
-        console.log('[SERVER] Raw senderSubscription:', sender);
+        // console.log('[SERVER] Raw senderSubscription:', sender);
 
         // 2) Если это строка — пробуем распарсить
         if (typeof sender === 'string') {
             try {
                 sender = JSON.parse(sender);
             } catch (e) {
-                console.error('[SERVER] Невалидный JSON в senderSubscription:', e);
+                // console.error('[SERVER] Невалидный JSON в senderSubscription:', e);
                 return res.status(400).json({ error: 'Невалидный формат senderSubscription' });
             }
         }
 
         // 3) Проверяем, что у нас есть объект с endpoint
         if (!sender || typeof sender.endpoint !== 'string') {
-            console.error('[SERVER] senderSubscription.endpoint отсутствует или не строка');
+            // console.error('[SERVER] senderSubscription.endpoint отсутствует или не строка');
             return res.status(400).json({ error: 'senderSubscription не указан или некорректен' });
         }
 
         // 4) Нормализуем endpoint (убираем пробелы по краям)
         const senderEndpoint = sender.endpoint.trim();
-        console.log('[SERVER] Using sender.endpoint =', senderEndpoint);
+        // console.log('[SERVER] Using sender.endpoint =', senderEndpoint);
 
         // 5) Читаем все подписки
         const allSubs = await getSubscriptions();
-        console.log('[SERVER] All endpoints:', allSubs.map(s => s.endpoint));
+        // console.log('[SERVER] All endpoints:', allSubs.map(s => s.endpoint));
 
         // 6) Фильтруем — оставляем только те, чей endpoint не равен senderEndpoint
         const recipients = allSubs.filter(s => {
             const ep = typeof s.endpoint === 'string' ? s.endpoint.trim() : '';
             return ep !== senderEndpoint;
         });
-        console.log('[SERVER] Recipients endpoints:', recipients.map(s => s.endpoint));
+        // console.log('[SERVER] Recipients endpoints:', recipients.map(s => s.endpoint));
 
         // 7) Если никого нет — сразу ответ
         if (recipients.length === 0) {
-            console.log('[SERVER] Никого не нужно уведомлять');
+            // console.log('[SERVER] Никого не нужно уведомлять');
             return res.status(200).json({ success: true, message: 'Нет получателей' });
         }
 
@@ -113,40 +112,20 @@ app.post('/sendNotification', async (req, res) => {
         const p256dh = sender.keys?.p256dh;
 
         if (p256dh === 'BDo-Qix-qhyRYYuHYLECkldeJl9yJ9WNjghF8HaGCvpgltIPk3o4UDDRPmAcpfni2ZTLGi7-5ZkBsCA_D8K-E4s') {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
-        } else if (p256dh === 'BIqSR4K4jKUp6bFd2ldmaiD_OziiWjhf8YGecHTUQZeARWJTea9KbAOOyOz-WE3Y_ao49TMP0FQVEvt81ZDrHK0') {
             payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
+        } else if (p256dh === 'BIqSR4K4jKUp6bFd2ldmaiD_OziiWjhf8YGecHTUQZeARWJTea9KbAOOyOz-WE3Y_ao49TMP0FQVEvt81ZDrHK0') {
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!' });
         } else {
-            payload = JSON.stringify({ title: 'Привет!', body: 'Это пуш по кнопке!' });
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!' });
         }
 
-        const results = await Promise.allSettled(
+        await Promise.allSettled(
             recipients.map(sub => webpush.sendNotification(sub, payload))
         );
 
-        // 9) Собираем валидные подписки
-        const validRecipients = [];
-        results.forEach((r, idx) => {
-            if (r.status === 'fulfilled') {
-                validRecipients.push(recipients[idx]);
-            } else if (r.reason?.statusCode === 410) {
-                console.log('[SERVER] Удаляем устаревшую подписку:', recipients[idx].endpoint);
-            } else {
-                console.warn('[SERVER] Ошибка при отправке на', recipients[idx].endpoint, r.reason);
-                validRecipients.push(recipients[idx]);
-            }
-        });
-
-        // 10) Восстанавливаем финальный список (валидные + sender, если он был в allSubs)
-        const finalList = [...validRecipients];
-        if (allSubs.some(s => s.endpoint.trim() === senderEndpoint)) {
-            finalList.push(sender);
-        }
-
-        console.log('[SERVER] Push завершён. Успех:', validRecipients.length, 'Неудач:', recipients.length - validRecipients.length);
         return res.status(200).json({ success: true });
     } catch (err) {
-        console.error('[SERVER] /sendNotification error:', err);
+        // console.error('[SERVER] /sendNotification error:', err);
         return res.status(500).json({ error: 'Ошибка отправки уведомлений' });
     }
 });
@@ -155,7 +134,7 @@ app.post('/sendNotification', async (req, res) => {
 
 
 app.use((err, req, res, next) => {
-    console.error('[SERVER] Unhandled error:', err);
+    // console.error('[SERVER] Unhandled error:', err);
     res.status(500).json({ error: 'Внутренняя ошибка сервера' });
 });
 
