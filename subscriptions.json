@@ -6,13 +6,6 @@
     "p256dh": "BDGyxOOL6Xv1WiKgwLr1nERCrTspgDzm7WzCLZCmQa43en0U-GfTpQwzc3ZhC2zeQ7Yen8b3ZrTw8YteQ01Qe4E",
     "auth": "HeOmEx_0RwLVXUpxxpbt4Q"
   }
-},{
-  "endpoint": "https://fcm.googleapis.com/fcm/send/dMbG23l8SUM:APA91bHrKW0VEWu61WuJKGYn9TBhoyFlMrbguM7pi2bKgFc1i_aCJOy2Yug-KVgJd1fOKvCMcKvS02qqeHES-iEU0faUBR5ljWssiFNcAuTAhi35TrbWQjDevjJQ9hgm3rxjS-efgevp",
-  "expirationTime": null,
-  "keys": {
-    "p256dh": "BDo-Qix-qhyRYYuHYLECkldeJl9yJ9WNjghF8HaGCvpgltIPk3o4UDDRPmAcpfni2ZTLGi7-5ZkBsCA_D8K-E4s",
-    "auth": "9LdBW45p81Woi5BDal4rsQ"
-  }
 },
 
 {
@@ -20,6 +13,13 @@
   "keys": {
     "p256dh": "BPixk2h1Ys5KnHTr7x1f2Dq3a86TyAL4MNDqi1uFW0MVUBGVel225vuIHCCDuR-7MGga-eI5Rvq5dVPkKLwfqps",
     "auth": "PMg1pQ47wzX7zUOHcKzc4w"
+  }
+},
+{
+  "endpoint": "https://web.push.apple.com/QM-D4d6eiB7v1yFYlLQyieN02kXXQTtY-ExhTqu60F99m6P4QXoCPX5-q0w4nKYGi1d8JhX2qROrOJfT_9Uco3XrVVN4GCJRUkVXB8xyLNlJCVxABuiXdrXr8FhrtMyJiuFOxibyRSjw3DcuzA1Un7e-SPA2sivr4_h3W8efucM",
+  "keys": {
+    "p256dh": "BIpp8vWQzNbwg-kYYI11_FZoRu0N-pxLelRsx8s-FuR5AuMrFcZSvMabV-1eu7_d9M9P3OxqiqbLvftkUt1XxRA",
+    "auth": "_OIUwZFbU5F7X2r9oSZiqw"
   }
 }
 ]

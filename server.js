@@ -68,64 +68,56 @@ app.post('/sendNotification', async (req, res) => {
     try {
         // 1) Забираем senderSubscription из тела
         let sender = req.body?.senderSubscription;
-        // console.log('[SERVER] Raw senderSubscription:', sender);
 
         // 2) Если это строка — пробуем распарсить
         if (typeof sender === 'string') {
             try {
                 sender = JSON.parse(sender);
             } catch (e) {
-                // console.error('[SERVER] Невалидный JSON в senderSubscription:', e);
-                return res.status(400).json({ error: 'Невалидный формат senderSubscription' });
+                // Если невалидный JSON — просто обнуляем, чтобы отправить всем
+                sender = null;
             }
         }
 
-        // 3) Проверяем, что у нас есть объект с endpoint
-        if (!sender || typeof sender.endpoint !== 'string') {
-            // console.error('[SERVER] senderSubscription.endpoint отсутствует или не строка');
-            return res.status(400).json({ error: 'senderSubscription не указан или некорректен' });
+        // 3) Если sender есть и корректен — нормализуем endpoint
+        let senderEndpoint = null;
+        if (sender && typeof sender.endpoint === 'string') {
+            senderEndpoint = sender.endpoint.trim();
         }
 
-        // 4) Нормализуем endpoint (убираем пробелы по краям)
-        const senderEndpoint = sender.endpoint.trim();
-        // console.log('[SERVER] Using sender.endpoint =', senderEndpoint);
-
-        // 5) Читаем все подписки
+        // 4) Читаем все подписки
         const allSubs = await getSubscriptions();
-        // console.log('[SERVER] All endpoints:', allSubs.map(s => s.endpoint));
 
-        // 6) Фильтруем — оставляем только те, чей endpoint не равен senderEndpoint
+        // 5) Фильтруем — исключаем отправителя, если он известен
         const recipients = allSubs.filter(s => {
             const ep = typeof s.endpoint === 'string' ? s.endpoint.trim() : '';
-            return ep !== senderEndpoint;
+            return senderEndpoint ? ep !== senderEndpoint : true;
         });
-        // console.log('[SERVER] Recipients endpoints:', recipients.map(s => s.endpoint));
 
-        // 7) Если никого нет — сразу ответ
+        // 6) Если никого нет — сразу ответ
         if (recipients.length === 0) {
-            // console.log('[SERVER] Никого не нужно уведомлять');
             return res.status(200).json({ success: true, message: 'Нет получателей' });
         }
 
-        // 8) Готовим и шлем payload
+        // 7) Готовим payload
         let payload;
-        const p256dh = sender.keys?.p256dh;
+        const p256dh = sender?.keys?.p256dh;
 
-        if (p256dh === 'BDGyxOOL6Xv1WiKgwLr1nERCrTspgDzm7WzCLZCmQa43en0U-GfTpQwzc3ZhC2zeQ7Yen8b3ZrTw8YteQ01Qe4E') {
+        if (p256dh === 'BIpp8vWQzNbwg-kYYI11_FZoRu0N-pxLelRsx8s-FuR5AuMrFcZSvMabV-1eu7_d9M9P3OxqiqbLvftkUt1XxRA') {
             payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
         } else if (p256dh === 'BPixk2h1Ys5KnHTr7x1f2Dq3a86TyAL4MNDqi1uFW0MVUBGVel225vuIHCCDuR-7MGga-eI5Rvq5dVPkKLwfqps') {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!' });
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
         } else {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку!', body: 'Я тебя люблю!' });
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
         }
 
+        // 8) Рассылка
         await Promise.allSettled(
             recipients.map(sub => webpush.sendNotification(sub, payload))
         );
 
         return res.status(200).json({ success: true });
     } catch (err) {
-        // console.error('[SERVER] /sendNotification error:', err);
         return res.status(500).json({ error: 'Ошибка отправки уведомлений' });
     }
 });
@@ -139,3 +131,6 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
+// 1 - яндкес
+// 2 - мой айфон
+// 3 - ангелина
