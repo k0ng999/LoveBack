@@ -111,12 +111,12 @@ app.post('/sendNotification', async (req, res) => {
         let payload;
         const p256dh = sender.keys?.p256dh;
 
-        if (p256dh === 'BDo-Qix-qhyRYYuHYLECkldeJl9yJ9WNjghF8HaGCvpgltIPk3o4UDDRPmAcpfni2ZTLGi7-5ZkBsCA_D8K-E4s') {
+        if (p256dh === 'BDGyxOOL6Xv1WiKgwLr1nERCrTspgDzm7WzCLZCmQa43en0U-GfTpQwzc3ZhC2zeQ7Yen8b3ZrTw8YteQ01Qe4E') {
             payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
-        } else if (p256dh === 'BIqSR4K4jKUp6bFd2ldmaiD_OziiWjhf8YGecHTUQZeARWJTea9KbAOOyOz-WE3Y_ao49TMP0FQVEvt81ZDrHK0') {
+        } else if (p256dh === 'BPixk2h1Ys5KnHTr7x1f2Dq3a86TyAL4MNDqi1uFW0MVUBGVel225vuIHCCDuR-7MGga-eI5Rvq5dVPkKLwfqps') {
             payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!' });
         } else {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!' });
+            payload = JSON.stringify({ title: 'Ваня нажал на кнопку!', body: 'Я тебя люблю!' });
         }
 
         await Promise.allSettled(
