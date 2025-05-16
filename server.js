@@ -103,7 +103,7 @@ app.post('/sendNotification', async (req, res) => {
         let payload;
         const p256dh = sender?.keys?.p256dh;
 
-        if (p256dh === 'BIpp8vWQzNbwg-kYYI11_FZoRu0N-pxLelRsx8s-FuR5AuMrFcZSvMabV-1eu7_d9M9P3OxqiqbLvftkUt1XxRA') {
+        if (p256dh === 'BDNBNYU2clHkTtkkgZFJEE7mdYbkaDC72ny0KIKZTlXpZZh63IJi5a64XejCv4xEwD0kQ8v17DbZ8OlwRUc9FCE') {
             payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
         } else if (p256dh === 'BPixk2h1Ys5KnHTr7x1f2Dq3a86TyAL4MNDqi1uFW0MVUBGVel225vuIHCCDuR-7MGga-eI5Rvq5dVPkKLwfqps') {
             payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
