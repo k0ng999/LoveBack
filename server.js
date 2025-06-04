@@ -115,10 +115,10 @@ app.post('/subscribe', async (req, res) => {
         const exists = subs.some(s => s.endpoint === subscription.endpoint);
 
         if (!exists) {
-            console.log('[SERVER] Добавляем подписку:', subscription.endpoint);
+            // console.log('[SERVER] Добавляем подписку:', subscription.endpoint);
             await addSubscription(subscription);
         } else {
-            console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
+            // console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
         }
 
         res.status(201).json({ success: true });
