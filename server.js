@@ -4,6 +4,7 @@ import bodyParser from 'body-parser';
 import cors from 'cors';
 import fs from 'fs/promises'; // используем промисифицированный fs
 import path from 'path';
+import { Pool } from 'pg';
 
 const app = express();
 app.use(cors({
@@ -23,38 +24,101 @@ const vapidKeys = {
 };
 webpush.setVapidDetails('mailto:test@example.com', vapidKeys.publicKey, vapidKeys.privateKey);
 
-// --- Утилиты для работы с файлом ---
-async function getSubscriptions() {
+
+
+
+// Настройки подключения к базе subs
+const pool = new Pool({
+    user: 'postgres.syqsgbsymiigkocpdtpc',
+    host: 'aws-0-us-east-2.pooler.supabase.com',
+    database: 'postgres',  // имя базы данных
+    password: '1IvannIvan1.',
+    port: 5432,
+});
+
+
+async function addSubscription(subscription) {
+    const query = `
+    INSERT INTO subs(subscriptions)
+    VALUES ($1::jsonb)
+    RETURNING id;
+  `;
+
     try {
-        const raw = await fs.readFile(subscriptionsFile, 'utf8');
-        if (!raw.trim()) return [];
-        return JSON.parse(raw);
+        const res = await pool.query(query, [JSON.stringify(subscription)]);
+        console.log('Inserted with id:', res.rows[0].id);
     } catch (err) {
-        // Если файл не найден или JSON некорректен — возвращаем пустой список
-        if (err.code !== 'ENOENT') console.error('[FS] Ошибка чтения/парсинга:', err);
+        console.error('Error inserting subscription:', err);
+    }
+}
+
+
+
+// Пример данных, которые нужно вставить
+// const subscriptionData = {
+//     endpoint: "https://fcm.googleapis.com/fcm/send/e9hIG0HdpwI:APA91bEerUc-x00YVI4xGlmU-xKKnFuaGps8WDnRx27JEQkYteK8ipTUA82fC_Vb2q8_SJscG-J1wD5tx802kVrDxhNSHxqoB6MAZnoV9SbpKueinCovKUlbTwmB5IT8IsrNpiwDN_Lb",
+//     expirationTime: null,
+//     keys: {
+//         p256dh: "BPMPLS93-oCyTUYx9sttkec79LYs9kyKVf9USXfvMVnQooVMpmcJI1byVEY0fKcFXukA6PUI7DwEjBphWuO9qjs",
+//         auth: "P-cSGFVGzFO4EEDUa6O17w"
+//     }
+// };
+
+// addSubscription(subscriptionData);
+
+
+
+async function getAllSubscriptions() {
+    const query = `
+    SELECT * FROM subs;
+  `;
+
+    try {
+        const res = await pool.query(query);
+        const subscriptions = res.rows.map(row => row.subscriptions);
+
+        return subscriptions;
+    } catch (err) {
+        console.error('Error fetching subscriptions:', err);
         return [];
     }
 }
 
 
-// --- Роуты ---
-app.get('/vapidPublicKey', (req, res) => {
-    res.send(vapidKeys.publicKey);
-});
+// getAllSubscriptions().then(subs => {
+//     // можно отправить уведомления каждому
+//     subs.forEach(sub => {
+//         console.log('Send push to:', sub.endpoint);
+//     });
+// });
+
+
+
+
+
+
+
+
+
+
 
 app.post('/subscribe', async (req, res) => {
     try {
         const subscription = req.body;
+
         if (!subscription || !subscription.endpoint) {
             return res.status(400).json({ error: 'Неверный формат подписки' });
         }
 
-        const subs = await getSubscriptions();
+        const subs = await getAllSubscriptions();
+
         const exists = subs.some(s => s.endpoint === subscription.endpoint);
+
         if (!exists) {
-            console.log('[SERVER] Добавляем подписку:------------------------------------------------------------->', subscription);
+            console.log('[SERVER] Добавляем подписку:', subscription.endpoint);
+            await addSubscription(subscription);
         } else {
-            // console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
+            console.log('[SERVER] Подписка уже существует:', subscription.endpoint);
         }
 
         res.status(201).json({ success: true });
@@ -63,6 +127,7 @@ app.post('/subscribe', async (req, res) => {
         res.status(500).json({ error: 'Не удалось сохранить подписку' });
     }
 });
+
 
 app.post('/sendNotification', async (req, res) => {
     try {
@@ -86,7 +151,7 @@ app.post('/sendNotification', async (req, res) => {
         }
 
         // 4) Читаем все подписки
-        const allSubs = await getSubscriptions();
+        const allSubs = await getAllSubscriptions();
 
         // 5) Фильтруем — исключаем отправителя, если он известен
         const recipients = allSubs.filter(s => {
@@ -101,15 +166,9 @@ app.post('/sendNotification', async (req, res) => {
 
         // 7) Готовим payload
         let payload;
-        const p256dh = sender?.keys?.p256dh;
 
-        if (p256dh === 'BDNBNYU2clHkTtkkgZFJEE7mdYbkaDC72ny0KIKZTlXpZZh63IJi5a64XejCv4xEwD0kQ8v17DbZ8OlwRUc9FCE') {
-            payload = JSON.stringify({ title: 'Ангелина нажала на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
-        } else if (p256dh === 'BPixk2h1Ys5KnHTr7x1f2Dq3a86TyAL4MNDqi1uFW0MVUBGVel225vuIHCCDuR-7MGga-eI5Rvq5dVPkKLwfqps') {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
-        } else {
-            payload = JSON.stringify({ title: 'Ваня нажал на кнопку', body: 'Я тебя люблю!', icon: "logo.png" });
-        }
+        payload = JSON.stringify({ title: 'Не скучай', body: 'Я тебя люблю!', icon: "logo.png" });
+
 
         // 8) Рассылка
         await Promise.allSettled(
@@ -131,6 +190,3 @@ app.use((err, req, res, next) => {
 });
 
 app.listen(port, () => console.log(`Server started on port ${port}`));
-// 1 - яндкес
-// 2 - мой айфон
-// 3 - ангелина
